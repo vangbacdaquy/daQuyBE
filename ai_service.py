@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PROJECT_ID = os.getenv("PROJECT_ID")
 LOCATION = os.getenv("LOCATION")
 MODEL_ID = "gemini-2.5-flash"
@@ -14,7 +14,10 @@ MODEL_ID = "gemini-2.5-flash"
 async def handle_ai_request(request):
     """Hàm xử lý request từ Frontend."""
     # Khởi tạo Client
-    aclient = Client(api_key=GEMINI_API_KEY).aio
+    aclient = Client(
+        vertexai=True,
+        project=PROJECT_ID,
+        location=LOCATION).aio
 
     # Lấy dữ liệu JSON
     try:
