@@ -20,10 +20,10 @@ app.add_middleware(
 
 # Healthcheck (Sync vẫn chạy tốt trong FastAPI)
 @app.get("/health")
-def health_check(request: Request):
+async def health_check(request: Request):
     # Gọi hàm bên file health.py
     # Lưu ý: health.py cần sửa nhẹ để không phụ thuộc request object của flask
-    return health.handle_health_check(request)
+    return await health.handle_health_check(request)
 
 # AI Process (ASYNC TOÀN TẬP)
 @app.post("/process-ai")
