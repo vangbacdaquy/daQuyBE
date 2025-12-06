@@ -1,20 +1,32 @@
 # main.py
-import functions_framework
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 import health
 import ai_service
 
-@functions_framework.http
-async def entry_point(request):
-    path = request.path # Lấy cái đuôi phía sau domain
-    
-    # URL 1: .../health
-    if path == "/health":
-        return health.handle_health_check(request)
-    
-    # URL 2: .../process-ai
-    elif path == "/process-ai":
-        return await ai_service.handle_ai_request(request)
-        
-    # URL lạ -> Báo lỗi 404
-    else:
-        return {"error": "Đường dẫn không tồn tại"}, 404
+# Khởi tạo App
+app = FastAPI()
+
+# 1. CẤU HÌNH CORS (Tự động)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Cho phép mọi domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 2. ĐỊNH NGHĨA ROUTER
+
+# Healthcheck (Sync vẫn chạy tốt trong FastAPI)
+@app.get("/health")
+def health_check(request: Request):
+    # Gọi hàm bên file health.py
+    # Lưu ý: health.py cần sửa nhẹ để không phụ thuộc request object của flask
+    return health.handle_health_check(request)
+
+# AI Process (ASYNC TOÀN TẬP)
+@app.post("/process-ai")
+async def process_ai(request: Request):
+    # Gọi hàm async bên ai_service.py
+    return await ai_service.handle_ai_request(request)

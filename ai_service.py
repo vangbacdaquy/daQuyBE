@@ -1,6 +1,6 @@
 from google.genai import Client, types
 from dotenv import load_dotenv
-import functions_framework
+from fastapi.responses import JSONResponse
 import os
 
 load_dotenv()
@@ -11,24 +11,26 @@ LOCATION = os.getenv("LOCATION")
 MODEL_ID = "gemini-2.5-flash"
 
 
-@functions_framework.http
 async def handle_ai_request(request):
     """Hàm xử lý request từ Frontend."""
     # Khởi tạo Client
     aclient = Client(api_key=GEMINI_API_KEY).aio
 
     # Lấy dữ liệu JSON
-    request_json = await request.get_json(silent=True)
+    try:
+        request_json = await request.json()
+    except Exception:
+        request_json = None
     
     if not request_json:
-        return {"error": "Invalid JSON"}, 400
+        return JSONResponse(content={"error": "Invalid JSON"}, status_code=400)
 
     file_uris = request_json.get('file_uris', [])
     prompt_text = request_json.get('prompt')
 
     # Kiểm tra đầu vào: phải có ít nhất file hoặc prompt
     if not file_uris and not prompt_text:
-        return {"error": "Cần cung cấp file_uris hoặc prompt"}, 400
+        return JSONResponse(content={"error": "Cần cung cấp file_uris hoặc prompt"}, status_code=400)
 
     # Nếu không có prompt nhưng có file, dùng prompt mặc định
     if not prompt_text:
@@ -52,15 +54,22 @@ async def handle_ai_request(request):
         )
 
         # Trả về kết quả
-        return {
+        # Lưu ý: response.usage_metadata có thể cần convert sang dict nếu nó là object
+        usage_data = response.usage_metadata
+        if hasattr(usage_data, "model_dump"):
+            usage_data = usage_data.model_dump()
+        elif hasattr(usage_data, "to_dict"):
+            usage_data = usage_data.to_dict()
+
+        return JSONResponse(content={
             "status": "success",
             "data": response.text,
-            "usage": response.usage_metadata
-        }, 200
+            "usage": usage_data
+        }, status_code=200)
 
     except Exception as e:
         print(f"Lỗi: {e}")
-        return {"error": str(e)}, 500
+        return JSONResponse(content={"error": str(e)}, status_code=500)
     
     finally:
         await aclient.aclose()

@@ -1,1 +1,1 @@
-web: functions-framework --target=entry_point --signature-type=http
+web: uvicorn main:app --host 0.0.0.0 --port $PORT
