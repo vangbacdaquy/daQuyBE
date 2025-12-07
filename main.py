@@ -9,6 +9,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import health
 import ai_service
+import report_service
 
 # --- Init Services ---
 if not firebase_admin._apps:
@@ -70,3 +71,7 @@ def health_check(request: Request):
 @limiter.limit("20/minute")
 async def process_ai(request: Request, user_info: dict = Depends(verify_token)):
     return await ai_service.handle_ai_request(request)
+
+@app.post("/save-report")
+async def save_report(report: report_service.ReportRequest, user_info: dict = Depends(verify_token)):
+    return await report_service.handle_save_report(report, user_info.get("email"))

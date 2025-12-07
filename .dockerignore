@@ -1,12 +1,17 @@
-.git
-.gitignore
-__pycache__
-.env
+# Bỏ qua thư mục ảo Python
 venv/
-.venv/
+__pycache__/
 *.pyc
-*.pyo
-*.pyd
-.DS_Store
-test_*.py
-local_test.py
+
+# Bỏ qua git
+.git/
+.gitignore
+
+# Bỏ qua file môi trường local (CỰC QUAN TRỌNG ĐỂ BẢO MẬT)
+.env
+
+# Bỏ qua các file rác khác
+README.md
+Dockerfile
+.dockerignore
+cloudbuild.yaml

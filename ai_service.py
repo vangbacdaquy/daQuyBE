@@ -1,6 +1,7 @@
 from google.genai import Client, types
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
+from prompt import SYSTEM_INSTRUCTION
 import os
 
 load_dotenv()
@@ -9,7 +10,6 @@ load_dotenv()
 PROJECT_ID = os.getenv("PROJECT_ID")
 LOCATION = os.getenv("LOCATION")
 MODEL_ID = "gemini-3-pro-preview"
-
 
 async def handle_ai_request(request):
     """Hàm xử lý request từ Frontend."""
@@ -54,6 +54,12 @@ async def handle_ai_request(request):
         response = await aclient.models.generate_content(
             model=MODEL_ID,
             contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_INSTRUCTION,
+                temperature=0,
+                top_p=None,
+                top_k=None,
+        ),
         )
 
         # Trả về kết quả
