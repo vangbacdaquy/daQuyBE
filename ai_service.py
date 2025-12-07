@@ -8,7 +8,7 @@ load_dotenv()
 # GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PROJECT_ID = os.getenv("PROJECT_ID")
 LOCATION = os.getenv("LOCATION")
-MODEL_ID = "gemini-2.5-flash"
+MODEL_ID = "gemini-3-pro-preview"
 
 
 async def handle_ai_request(request):
