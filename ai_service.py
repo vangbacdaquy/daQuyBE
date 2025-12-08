@@ -49,7 +49,7 @@ async def process_single_file(aclient, uri: str, prompt: str):
                 system_instruction=SYSTEM_INSTRUCTION,
                 temperature=0,
                 response_mime_type="application/json",
-                response_schema=InventoryItem, # Ép kiểu trả về
+                response_schema=InventoryItem,
             ),
         )
         
@@ -121,4 +121,4 @@ async def handle_ai_request(request):
         )
     
     finally:
-        await aclient.close()
+        await aclient.aclose()
