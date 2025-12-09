@@ -2,6 +2,7 @@ from google.genai import Client, types
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from prompt import SYSTEM_INSTRUCTION
 import os
 import asyncio
 import time
@@ -11,26 +12,11 @@ load_dotenv()
 
 PROJECT_ID = os.getenv("PROJECT_ID")
 LOCATION = os.getenv("LOCATION")
-MODEL_ID = "gemini-3-pro-preview" # Giữ nguyên theo yêu cầu
+MODEL_ID = "gemini-3-pro-preview"
 
-# 1. Định nghĩa cấu trúc output mong muốn
 class InventoryItem(BaseModel):
     count: int = Field(..., description="Số lượng món đồ đếm được")
     description: str = Field(..., description="Mô tả chi tiết logic đếm")
-
-# 2. Prompt mới
-SYSTEM_INSTRUCTION = """
-## VAI TRÒ
-Bạn là chuyên gia kiểm kê trang sức. Nhiệm vụ: phân tích hình ảnh và đếm số lượng món đồ.
-
-## QUY TRÌNH
-1. Xác định bố cục (lưới/tự do).
-2. Đếm: (Tổng khe - Khe trống) hoặc cộng dồn từng nhóm.
-3. Loại bỏ nhiễu (bóng, khe rỗng).
-
-## OUTPUT
-Trả về JSON gồm số lượng (count) và giải thích (description).
-"""
 
 async def process_single_file(aclient, uri: str, prompt: str):
     """Xử lý từng file để đảm bảo map đúng imageID"""
@@ -48,6 +34,8 @@ async def process_single_file(aclient, uri: str, prompt: str):
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_INSTRUCTION,
                 temperature=0,
+                top_k=None,
+                top_p=None,
                 response_mime_type="application/json",
                 response_schema=InventoryItem,
             ),

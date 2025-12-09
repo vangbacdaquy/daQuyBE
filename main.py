@@ -75,3 +75,16 @@ async def process_ai(request: Request, user_info: dict = Depends(verify_token)):
 @app.post("/save-report")
 async def save_report(reports: list[report_service.ReportRequest], user_info: dict = Depends(verify_token)):
     return await report_service.handle_save_report(reports, user_info.get("email"))
+
+@app.get("/reports")
+async def get_reports(
+    user_email: str, 
+    start_date: str, 
+    end_date: str, 
+    user_info: dict = Depends(verify_token)
+):
+    """
+    Lấy danh sách báo cáo theo user_email và khoảng thời gian (start_date, end_date).
+    Format date: YYYY-MM-DD
+    """
+    return await report_service.handle_load_reports(user_email, start_date, end_date)
