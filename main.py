@@ -73,5 +73,5 @@ async def process_ai(request: Request, user_info: dict = Depends(verify_token)):
     return await ai_service.handle_ai_request(request)
 
 @app.post("/save-report")
-async def save_report(report: report_service.ReportRequest, user_info: dict = Depends(verify_token)):
-    return await report_service.handle_save_report(report, user_info.get("email"))
+async def save_report(reports: list[report_service.ReportRequest], user_info: dict = Depends(verify_token)):
+    return await report_service.handle_save_report(reports, user_info.get("email"))
