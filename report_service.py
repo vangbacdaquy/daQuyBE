@@ -18,6 +18,7 @@ except Exception as e:
 # --- Data Models ---
 class ReportRequest(BaseModel):
     image_url: str
+    ai_description: str | None = ""
     ai_count: int
     manual_count: int
     notes: str | None = ""
@@ -35,6 +36,7 @@ async def handle_save_report(report: ReportRequest, user_email: str):
         doc_data = {
             "user_email": user_email,
             "image_url": report.image_url,
+            "ai_description": report.ai_description,
             "ai_count": report.ai_count,
             "manual_count": report.manual_count,
             "variance": variance,
