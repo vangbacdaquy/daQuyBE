@@ -105,9 +105,9 @@ async def handle_load_reports(user_email: str, start_date: str, end_date: str):
 
     try:
         # Tạo query cơ bản: filter theo user_email
-        reports_ref = db.collection("reports")
+        query = db.collection("reports")
         if(user_email != "" and user_email is not None):
-            query = reports_ref.where(filter=firestore.FieldFilter("user_email", "==", user_email))
+            query = query.where(filter=firestore.FieldFilter("user_email", "==", user_email))
 
         # Filter theo date range (dựa trên field date_str)
         if start_date:
