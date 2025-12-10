@@ -72,6 +72,7 @@ async def handle_save_bulk_reports(reports: list[ReportRequest], user_email: str
             "ai_count": report.ai_count,
             "manual_count": report.manual_count,
             "variance": variance,
+            "ai_description": report.ai_description,
             "notes": report.notes,
             "created_at": firestore.SERVER_TIMESTAMP,
             "date_str": vn_now.strftime("%Y-%m-%d"),
