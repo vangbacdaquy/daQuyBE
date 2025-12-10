@@ -78,9 +78,9 @@ async def save_report(reports: list[report_service.ReportRequest], user_info: di
 
 @app.get("/reports")
 async def get_reports(
-    user_email: str, 
     start_date: str, 
     end_date: str, 
+    user_email: str | None = "", 
     user_info: dict = Depends(verify_token)
 ):
     """
