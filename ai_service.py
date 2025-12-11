@@ -12,7 +12,7 @@ load_dotenv()
 
 PROJECT_ID = os.getenv("PROJECT_ID")
 LOCATION = os.getenv("LOCATION")
-MODEL_ID = "gemini-3-pro-preview"
+MODEL_ID = "gemini-2.5-flash"
 
 class InventoryItem(BaseModel):
     count: int = Field(..., description="Số lượng món đồ đếm được")
