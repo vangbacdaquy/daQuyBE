@@ -72,6 +72,7 @@ async def handle_save_bulk_reports(reports: list[ReportRequest], user_email: str
             "ai_count": report.ai_count,
             "manual_count": report.manual_count,
             "variance": variance,
+            "ai_description": report.ai_description,
             "notes": report.notes,
             "created_at": firestore.SERVER_TIMESTAMP,
             "date_str": vn_now.strftime("%Y-%m-%d"),
@@ -105,8 +106,9 @@ async def handle_load_reports(user_email: str, start_date: str, end_date: str):
 
     try:
         # Tạo query cơ bản: filter theo user_email
-        reports_ref = db.collection("reports")
-        query = reports_ref.where(filter=firestore.FieldFilter("user_email", "==", user_email))
+        query = db.collection("reports")
+        if(user_email != "" and user_email is not None):
+            query = query.where(filter=firestore.FieldFilter("user_email", "==", user_email))
 
         # Filter theo date range (dựa trên field date_str)
         if start_date:
