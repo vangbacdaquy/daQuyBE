@@ -10,6 +10,7 @@ from slowapi.errors import RateLimitExceeded
 import health
 import ai_service
 import report_service
+import rate_limiter
 
 # --- Init Services ---
 if not firebase_admin._apps:
@@ -36,7 +37,8 @@ app.add_middleware(
 ALLOWED_EMAILS = [
     "dhtruong0407@gmail.com",
     "suplike1191@gmail.com",
-    "snmquangams@gmail.com"
+    "snmquangams@gmail.com",
+    "maipham1712@gmail.com"
 ]
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -50,6 +52,10 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Email {email} is not authorized."
             )
+        
+        # Check Rate Limit
+        rate_limiter.limiter_service.check_rate_limit(email)
+
         return decoded_token
         
     except HTTPException as he:
@@ -68,7 +74,6 @@ def health_check(request: Request):
     return health.handle_health_check(request)
 
 @app.post("/process-ai")
-@limiter.limit("20/minute")
 async def process_ai(request: Request, user_info: dict = Depends(verify_token)):
     return await ai_service.handle_ai_request(request)
 

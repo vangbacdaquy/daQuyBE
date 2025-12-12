@@ -15,8 +15,10 @@ LOCATION = os.getenv("LOCATION")
 MODEL_ID = "gemini-2.5-flash"
 
 class InventoryItem(BaseModel):
+    layout_type: str = Field(..., description="Dạng Lưới / Dạng Treo / Dạng Trải Ngang")
+    item_type: str = Field(..., description="Nhẫn / Bông tai / Dây chuyền / Lắc tay")
+    counting_logic: str = Field(..., description="Mô tả ngắn gọn quá trình soi và đếm")
     count: int = Field(..., description="Số lượng món đồ đếm được")
-    description: str = Field(..., description="Mô tả chi tiết logic đếm")
 
 async def process_single_file(aclient, uri: str, prompt: str):
     """Xử lý từng file để đảm bảo map đúng imageID"""
@@ -38,6 +40,7 @@ async def process_single_file(aclient, uri: str, prompt: str):
                 top_p=None,
                 response_mime_type="application/json",
                 response_schema=InventoryItem,
+                thinking_config=types.ThinkingConfig(thinking_level="low")
             ),
         )
         
@@ -45,15 +48,19 @@ async def process_single_file(aclient, uri: str, prompt: str):
         data = json.loads(response.text)
         return {
             "imageID": image_id,
+            "layout_type": data.get("layout_type", ""),
+            "item_type": data.get("item_type", ""),
             "count": data.get("count", 0),
-            "description": data.get("description", "")
+            "counting_logic": data.get("counting_logic", "")
         }
     except Exception as e:
         print(f"Err {image_id}: {e}")
         return {
             "imageID": image_id,
+            "layout_type": "Error",
+            "item_type": "Error",
             "count": 0,
-            "description": f"Lỗi: {str(e)}"
+            "counting_logic": f"Lỗi: {str(e)}"
         }
 
 async def handle_ai_request(request):
