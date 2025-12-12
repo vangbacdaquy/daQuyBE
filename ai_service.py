@@ -12,7 +12,7 @@ load_dotenv()
 
 PROJECT_ID = os.getenv("PROJECT_ID")
 LOCATION = os.getenv("LOCATION")
-MODEL_ID = "gemini-3-pro"
+MODEL_ID = "gemini-3-pro-preview"
 
 class InventoryItem(BaseModel):
     layout_type: str = Field(..., description="Dạng Lưới / Dạng Treo / Dạng Trải Ngang")
