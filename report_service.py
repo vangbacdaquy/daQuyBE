@@ -96,7 +96,7 @@ async def handle_save_bulk_reports(reports: list[ReportRequest], user_email: str
             "message": f"Database error: {str(e)}"
         }]}
 
-async def handle_load_reports(user_email: str, start_date: str, end_date: str, last_created_at: str, last_user_email: str, last_image_url: str):
+async def handle_load_reports(user_email: str, start_date: str, end_date: str, last_created_at: str, last_image_url: str):
     """
     Hàm load reports từ Firestore dựa trên user_email và khoảng thời gian.
     Query fields: user_email, date_str (YYYY-MM-DD)
@@ -119,12 +119,11 @@ async def handle_load_reports(user_email: str, start_date: str, end_date: str, l
             if end_date:
                 query = query.where(filter=firestore.FieldFilter("date_str", "<=", end_date))
 
-        query = query.order_by('created_at','desc').order_by('user_email', 'asc').order_by('image_url', 'asc')
+        query = query.order_by('created_at','desc').order_by('image_url', 'asc')
 
-        if (last_created_at and last_user_email and last_image_url):
+        if (last_created_at and last_image_url):
             query = query.start_after({
                 "created_at": last_created_at,
-                "user_email": last_user_email,
                 "image_url": last_image_url
             })
 
