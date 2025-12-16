@@ -119,7 +119,7 @@ async def handle_load_reports(user_email: str, start_date: str, end_date: str, l
             if end_date:
                 query = query.where(filter=firestore.FieldFilter("date_str", "<=", end_date))
 
-        query = query.order_by('created_at','desc').order_by('image_url', 'asc')
+        query = query.order_by('created_at',direction=firestore.Query.DESCENDING).order_by('image_url')
 
         if (last_created_at and last_image_url):
             query = query.start_after({
