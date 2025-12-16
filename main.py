@@ -85,8 +85,8 @@ async def save_report(reports: list[report_service.ReportRequest], user_info: di
 async def get_reports(
     start_date: str,
     end_date: str,
-    last_created_at: str | None = None,
-    last_image_url: str | None = None,
+    last_created_at: str | None = "",
+    last_image_url: str | None = "",
     user_email: str | None = "",
     user_info: dict = Depends(verify_token)
 ):
