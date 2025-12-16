@@ -150,7 +150,7 @@ async def handle_load_reports(user_email: str, start_date: str, end_date: str, l
             cursor_values.append(last_created_dt)
             cursor_values.append(last_image_url)
             
-            query = query.start_after(*cursor_values)
+            query = query.start_after(cursor_values)
 
         docs = query.limit(20).stream()
 
