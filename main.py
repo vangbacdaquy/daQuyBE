@@ -81,6 +81,15 @@ async def process_ai(request: Request, user_info: dict = Depends(verify_token)):
 async def save_report(reports: list[report_service.ReportRequest], user_info: dict = Depends(verify_token)):
     return await report_service.handle_save_bulk_reports(reports, user_info.get("email"))
 
+@app.get("/reports/summary")
+async def get_report_summary(
+    start_date: str,
+    end_date: str,
+    user_email: str | None = "",
+    user_info: dict = Depends(verify_token)
+):
+    return await report_service.handle_get_report_summary(user_email, start_date, end_date)
+
 @app.get("/reports")
 async def get_reports(
     start_date: str,
