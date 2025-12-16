@@ -111,21 +111,46 @@ async def handle_load_reports(user_email: str, start_date: str, end_date: str, l
             query = query.where(filter=firestore.FieldFilter("user_email", "==", user_email))
 
         # Filter theo date range (dựa trên field date_str)
-        if start_date and end_date and start_date == end_date and start_date != "":
+        is_range_query = False
+        if start_date == end_date:
             query = query.where(filter=firestore.FieldFilter("date_str", "==", start_date))
         else:
-            if start_date:
-                query = query.where(filter=firestore.FieldFilter("date_str", ">=", start_date))
-            if end_date:
-                query = query.where(filter=firestore.FieldFilter("date_str", "<=", end_date))
+            query = query.where(filter=firestore.FieldFilter("date_str", ">=", start_date))
+            query = query.where(filter=firestore.FieldFilter("date_str", "<=", end_date))
+            is_range_query = True
 
+        # Sorting
+        # Nếu có range filter trên date_str, bắt buộc phải sort theo date_str đầu tiên
+        if is_range_query:
+            query = query.order_by('date_str', direction=firestore.Query.DESCENDING)
+        
         query = query.order_by('created_at',direction=firestore.Query.DESCENDING).order_by('image_url')
 
         if (last_created_at and last_image_url):
-            query = query.start_after({
-                "created_at": last_created_at,
-                "image_url": last_image_url
-            })
+            # Convert ISO string to datetime for cursor
+            try:
+                # Handle 'Z' for UTC if present (Python < 3.11 compat)
+                iso_str = last_created_at.replace('Z', '+00:00')
+                last_created_dt = datetime.fromisoformat(iso_str)
+            except Exception:
+                last_created_dt = last_created_at
+
+            cursor_values = []
+            if is_range_query:
+                # Derive date_str from created_at
+                if isinstance(last_created_dt, datetime):
+                    vn_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+                    if last_created_dt.tzinfo is None:
+                        last_created_dt = last_created_dt.replace(tzinfo=pytz.utc)
+                    last_date_str = last_created_dt.astimezone(vn_tz).strftime("%Y-%m-%d")
+                    cursor_values.append(last_date_str)
+                else:
+                    cursor_values.append(start_date or end_date)
+
+            cursor_values.append(last_created_dt)
+            cursor_values.append(last_image_url)
+            
+            query = query.start_after(*cursor_values)
 
         docs = query.limit(20).stream()
 
