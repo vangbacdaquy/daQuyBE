@@ -96,7 +96,7 @@ async def handle_save_bulk_reports(reports: list[ReportRequest], user_email: str
             "message": f"Database error: {str(e)}"
         }]}
 
-async def handle_load_reports(user_email: str, start_date: str, end_date: str, last_created_at: str, last_image_url: str):
+async def handle_load_reports(user_email: str, start_date: str, end_date: str, last_created_at: str, last_image_url: str, include_summary: bool = False):
     """
     Hàm load reports từ Firestore dựa trên user_email và khoảng thời gian.
     Query fields: user_email, date_str (YYYY-MM-DD)
@@ -165,47 +165,43 @@ async def handle_load_reports(user_email: str, start_date: str, end_date: str, l
             
             reports.append(data)
 
-        return {"reports": reports}
+        response_data = {"reports": reports}
+
+        if include_summary:
+            summary_query = db.collection("reports")
+            if user_email:
+                summary_query = summary_query.where(filter=firestore.FieldFilter("user_email", "==", user_email))
+
+            if start_date == end_date:
+                summary_query = summary_query.where(filter=firestore.FieldFilter("date_str", "==", start_date))
+            else:
+                summary_query = summary_query.where(filter=firestore.FieldFilter("date_str", ">=", start_date))
+                summary_query = summary_query.where(filter=firestore.FieldFilter("date_str", "<=", end_date))
+
+            # Stream all matching documents for summary
+            summary_docs = summary_query.stream()
+            
+            total_ai = 0
+            total_manual = 0
+            total_variance = 0
+
+            for doc in summary_docs:
+                data = doc.to_dict()
+                total_ai += data.get("ai_count", 0) or 0
+                total_manual += data.get("manual_count", 0) or 0
+                total_variance += data.get("variance", 0) or 0
+
+            response_data["summary"] = {
+                "ai": total_ai,
+                "manual": total_manual,
+                "variance": total_variance
+            }
+
+        return response_data
 
     except Exception as e:
         print(f"Load Reports Error: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-async def handle_get_report_summary(user_email: str, start_date: str, end_date: str):
-    if not db:
-        raise HTTPException(status_code=500, detail="Database connection failed")
 
-    try:
-        query = db.collection("reports")
-        if user_email:
-            query = query.where(filter=firestore.FieldFilter("user_email", "==", user_email))
-
-        if start_date == end_date:
-            query = query.where(filter=firestore.FieldFilter("date_str", "==", start_date))
-        else:
-            query = query.where(filter=firestore.FieldFilter("date_str", ">=", start_date))
-            query = query.where(filter=firestore.FieldFilter("date_str", "<=", end_date))
-
-        # Stream all matching documents
-        docs = query.stream()
-        
-        total_ai = 0
-        total_manual = 0
-        total_variance = 0
-
-        for doc in docs:
-            data = doc.to_dict()
-            total_ai += data.get("ai_count", 0) or 0
-            total_manual += data.get("manual_count", 0) or 0
-            total_variance += data.get("variance", 0) or 0
-
-        return {
-            "ai": total_ai,
-            "manual": total_manual,
-            "variance": total_variance
-        }
-
-    except Exception as e:
-        print(f"Summary Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     

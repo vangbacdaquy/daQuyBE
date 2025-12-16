@@ -81,15 +81,6 @@ async def process_ai(request: Request, user_info: dict = Depends(verify_token)):
 async def save_report(reports: list[report_service.ReportRequest], user_info: dict = Depends(verify_token)):
     return await report_service.handle_save_bulk_reports(reports, user_info.get("email"))
 
-@app.get("/reports/summary")
-async def get_report_summary(
-    start_date: str,
-    end_date: str,
-    user_email: str | None = "",
-    user_info: dict = Depends(verify_token)
-):
-    return await report_service.handle_get_report_summary(user_email, start_date, end_date)
-
 @app.get("/reports")
 async def get_reports(
     start_date: str,
@@ -97,10 +88,11 @@ async def get_reports(
     last_created_at: str | None = "",
     last_image_url: str | None = "",
     user_email: str | None = "",
+    include_summary: bool = False,
     user_info: dict = Depends(verify_token)
 ):
     """
     Lấy danh sách báo cáo theo user_email và khoảng thời gian (start_date, end_date).
     Format date: YYYY-MM-DD
     """
-    return await report_service.handle_load_reports(user_email, start_date, end_date, last_created_at, last_image_url)
+    return await report_service.handle_load_reports(user_email, start_date, end_date, last_created_at, last_image_url, include_summary)
